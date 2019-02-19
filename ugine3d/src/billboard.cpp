@@ -13,9 +13,10 @@ BillboardPtr Billboard::create(const Material& mat, float spin) {
 /******************/
 
 Billboard::Billboard(const Material& mat, float spin) :
-	Entity    (),
-	mMaterial (const_cast<Material&>(mat)),
-	mSpin     (spin) {
+	Entity     (),
+	mMaterial  (const_cast<Material&>(mat)),
+	mSpin      (spin),
+	mAngleSpin (0.f) {
 	const std::shared_ptr<Texture>& matTexture = mat.getTexture();
 	if (matTexture) {
 		mSize = matTexture->getSize();
@@ -85,12 +86,17 @@ void Billboard::draw() {
 	| forward.x forward.y forward.z model.z |
 	| 0 0 0 1 |
 	*/
-	float modelMat[16] = { view[0][0], view[1][0], view[2][0], getPosition().x,
+	/*float modelMat[16] = { view[0][0], view[1][0], view[2][0], getPosition().x,
 						   view[0][1], view[1][1], view[2][1], getPosition().y,
 						   view[0][2], view[1][2], view[2][2], getPosition().z,
 								  0.f,        0.f,        0.f,             1.f };
-	glm::mat4 model = glm::make_mat4(modelMat);
-	model = glm::transpose(model);
+	glm::mat4 model = glm::make_mat4(modelMat);*/
+
+	glm::mat4 model = view;
+	model[3] = glm::vec4(getPosition(), 1.f);
+
+	model = glm::rotate(model, glm::angle(getQuaternion()), glm::axis(getQuaternion()));
+	model = glm::scale(model, glm::vec3(getSize(), 1.f) * getScale());
 	State::modelMatrix = model;
 	mMaterial.prepare();
 	mBuffer->draw(*mMaterial.getShader());

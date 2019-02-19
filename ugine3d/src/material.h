@@ -29,13 +29,15 @@ public:
 	void                            prepare();
 
 	BlendMode getBlendMode() const;
-	void setBlendMode(BlendMode blendMode);
-	bool getLighting() const;
-	void setLighting(bool enable);
-	bool getCulling() const;
-	void setCulling(bool enable);
-	bool getDepthWrite() const;
-	void setDepthWrite(bool enable);
+	void      setBlendMode(BlendMode blendMode);
+	bool      getLighting() const;
+	void      setLighting(bool enable);
+	bool      getCulling() const;
+	void      setCulling(bool enable);
+	bool      getDepthWrite() const;
+	void      setDepthWrite(bool enable);
+	float     getOpacityMultiplier() const;
+	void      setOpacityMultiplier(float multiplier);
 
 private:
 	std::shared_ptr<Texture> mTexture;
@@ -46,4 +48,5 @@ private:
 	bool                     mLighting;
 	bool                     mCulling;
 	bool                     mDepthWrite;
+	float                    mOpacityMultiplier;
 };

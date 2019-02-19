@@ -13,7 +13,8 @@ Material::Material(const std::shared_ptr<Texture>& tex, const std::shared_ptr<Sh
 	mBlendMode  (blendMode),
 	mLighting   (lighting),
 	mCulling    (culling),
-	mDepthWrite (depthWrite) {}
+	mDepthWrite (depthWrite),
+	mOpacityMultiplier(1.f) {}
 
 /******************/
 
@@ -78,26 +79,27 @@ void Material::prepare() {
 	shaderUsed->use();
 
 	glm::mat4 mvpMatrix = State::projectionMatrix * State::viewMatrix * State::modelMatrix;
-	State::defaultShader->setMatrix(shaderUsed->getLocation("mvp"), mvpMatrix);
+	shaderUsed->setMatrix(shaderUsed->getLocation("mvp"), mvpMatrix);
 
 	glm::mat4 modelviewMatrix = State::viewMatrix * State::modelMatrix;
-	State::defaultShader->setMatrix(shaderUsed->getLocation("modelView"), modelviewMatrix);
+	shaderUsed->setMatrix(shaderUsed->getLocation("modelView"), modelviewMatrix);
 
 	glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelviewMatrix));
-	State::defaultShader->setMatrix(shaderUsed->getLocation("mNormal"), normalMatrix);
+	shaderUsed->setMatrix(shaderUsed->getLocation("mNormal"), normalMatrix);
 
 	int isTexture = mTexture ? 1 : 0;
-	State::defaultShader->setInt(shaderUsed->getLocation("isTexture"), isTexture);
-	State::defaultShader->setInt(shaderUsed->getLocation("texSampler"), 0);
+	shaderUsed->setInt(shaderUsed->getLocation("isTexture"), isTexture);
+	shaderUsed->setInt(shaderUsed->getLocation("texSampler"), 0);
 	if (isTexture) mTexture->bind();
 
 	int numLights = static_cast<int>(State::lights.size());
-	State::defaultShader->setInt(shaderUsed->getLocation("numLights"), numLights);
-	State::defaultShader->setVec4(shaderUsed->getLocation("diffuseColor"), mColor);
-	State::defaultShader->setInt(shaderUsed->getLocation("shininess"), mShininess);
-	State::defaultShader->setVec3(shaderUsed->getLocation("ambientLight"), State::ambient);
+	shaderUsed->setInt(shaderUsed->getLocation("numLights"), numLights);
+	shaderUsed->setVec4(shaderUsed->getLocation("diffuseColor"), mColor);
+	shaderUsed->setInt(shaderUsed->getLocation("shininess"), mShininess);
+	shaderUsed->setVec3(shaderUsed->getLocation("ambientLight"), State::ambient);
+	shaderUsed->setFloat(shaderUsed->getLocation("opacityMultiplier"), mOpacityMultiplier);
 	for (int i = 0; i < numLights; ++i) {
-		State::lights[i]->prepare(i, State::defaultShader);
+		State::lights[i]->prepare(i, shaderUsed);
 	}
 
 	switch (mBlendMode) {
@@ -169,4 +171,16 @@ bool Material::getDepthWrite() const {
 
 void Material::setDepthWrite(bool enable) {
 	mDepthWrite = enable;
+}
+
+/******************/
+
+float Material::getOpacityMultiplier() const {
+	return mOpacityMultiplier;
+}
+
+/******************/
+
+void Material::setOpacityMultiplier(float multiplier) {
+	mOpacityMultiplier = multiplier;
 }

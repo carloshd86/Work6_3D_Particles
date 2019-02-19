@@ -16,7 +16,6 @@ protected:
 	Particle(const Material& mat, const glm::vec3& vel = { 0.f, 0.f, 0.f }, float spinVel = 0.f, float lifetime = 1.f, bool autofade = false);
 
 private:
-	float           mInitialColorAlpha;
 	glm::vec3       mVel;
 	float           mLifetime;
 	float           mCurrentLifetime;

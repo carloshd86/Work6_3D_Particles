@@ -45,5 +45,6 @@ private:
 	bool            mEmit;
 
 	int                    mNumParticles;
+	float                  mNumParticlesToEmit;
 	std::list<ParticlePtr> mParticles;
 };

@@ -16,7 +16,6 @@ Particle::Particle(const Material& mat, const glm::vec3& vel, float spinVel, flo
 	mLifetime        (lifetime),
 	mAutofade        (autofade),
 	mCurrentLifetime (0.f) {
-	mInitialColorAlpha = mMaterial.getColor().a;
 }
 
 /******************/
@@ -30,10 +29,12 @@ float Particle::getRemainingLifetime() const {
 void Particle::update(float deltaTime) {
 	mCurrentLifetime += deltaTime;
 	setPosition(getPosition() + deltaTime * mVel);
-	setEuler(getEuler() + mSpin * deltaTime);
+	mAngleSpin += glm::radians(deltaTime * mSpin);
+	setQuaternion(glm::angleAxis(mAngleSpin, glm::vec3(0.f, 0.f, 1.f)));
 	if (mAutofade) {
-		glm::vec4 updatedColor = mMaterial.getColor();
-		updatedColor.a = getRemainingLifetime() * mInitialColorAlpha / mLifetime;
-		mMaterial.setColor(updatedColor);
+		mMaterial.setOpacityMultiplier(getRemainingLifetime() / mLifetime);
+	}
+	else {
+		mMaterial.setOpacityMultiplier(1.f);
 	}
 }

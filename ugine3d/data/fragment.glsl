@@ -12,6 +12,7 @@ uniform vec3[MAX_LIGHTS] lightColor;
 uniform float[MAX_LIGHTS] lightLinearAttenuation;
 uniform float[MAX_LIGHTS] lightConstantAttenuation;
 uniform float[MAX_LIGHTS] lightQuadraticAttenuation;
+uniform float opacityMultiplier;
 varying vec3 fpos;
 varying vec3 fcolor;
 varying vec2 ftex;
@@ -45,17 +46,18 @@ void main() {
 		}
 
 		if (0 == isTexture) {
-			gl_FragColor = vec4(finalDiffuse * fcolor + finalSpecular, 1);
+			gl_FragColor = vec4(finalDiffuse * fcolor + finalSpecular, opacityMultiplier);
 		} else {
 			vec4 texColor = texture2D(texSampler, ftex);
-			gl_FragColor = vec4(finalDiffuse * texColor.xyz + finalSpecular, texColor.w);
+			gl_FragColor = vec4(finalDiffuse * texColor.xyz + finalSpecular, texColor.w * opacityMultiplier);
 		}
 	}
 	else {
 		if (0 == isTexture) {
-			gl_FragColor = vec4(fcolor, 1);
+			gl_FragColor = vec4(fcolor, opacityMultiplier);
 		} else {
-			gl_FragColor = texture2D(texSampler, ftex);
+			vec4 texColor = texture2D(texSampler, ftex);
+			gl_FragColor = vec4(texColor.xyz, texColor.w * opacityMultiplier);
 		}
 	}
 }

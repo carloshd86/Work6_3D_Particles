@@ -11,22 +11,24 @@ EmitterPtr Emitter::create(const Material& mat, bool autofade) {
 /******************/
 
 Emitter::Emitter(const Material& mat, bool autofade) :
-	Entity           (),
-	mMaterial        (mat),
-	mAutofade        (autofade),
-    mRateMin         (0.f),
-    mRateMax         (0.f),
-    mVelocityMin     { 0.f, 0.f, 0.f },
-    mVelocityMax     { 0.f, 0.f, 0.f },
-    mSpinVelocityMin (0.f),
-    mSpinVelocityMax (0.f),
-    mScaleMin        (0.f),
-    mScaleMax        (0.f),
-    mLifetimeMin     (0.f),
-    mLifetimeMax     (0.f),
-    mColorMin        { 0.f, 0.f, 0.f, 0.f },
-    mColorMax        { 0.f, 0.f, 0.f, 0.f },
-    mEmit            (false) {}
+	Entity              (),
+	mMaterial           (mat),
+	mAutofade           (autofade),
+    mRateMin            (0.f),
+    mRateMax            (0.f),
+    mVelocityMin        { 0.f, 0.f, 0.f },
+    mVelocityMax        { 0.f, 0.f, 0.f },
+    mSpinVelocityMin    (0.f),
+    mSpinVelocityMax    (0.f),
+    mScaleMin           (1.f),
+    mScaleMax           (1.f),
+    mLifetimeMin        (0.f),
+    mLifetimeMax        (0.f),
+    mColorMin           { 0.f, 0.f, 0.f, 0.f },
+    mColorMax           { 0.f, 0.f, 0.f, 0.f },
+    mEmit               (false),
+	mNumParticles       (0.f),
+	mNumParticlesToEmit (0.f) {}
 
 /******************/
 
@@ -86,15 +88,24 @@ bool Emitter::isEmitting() {
 
 void Emitter::update(float deltaTime) {
 	if (mEmit) {
-		float numParticles = glm::linearRand(mRateMin, mRateMax);
+		mNumParticlesToEmit += glm::linearRand(mRateMin, mRateMax) * deltaTime;
 
-		while (mNumParticles < numParticles) {
+		int particlesEmitted = 0;
+		for (int i = mNumParticles; i  < static_cast<int>(mNumParticlesToEmit); ++i) {
 			glm::vec3 particleVel(glm::linearRand(mVelocityMin.x, mVelocityMax.x), glm::linearRand(mVelocityMin.y, mVelocityMax.y), glm::linearRand(mVelocityMin.z, mVelocityMax.z));
 			float particleSpinVel = glm::linearRand(mSpinVelocityMin, mSpinVelocityMax);
 			float particleLifetime = glm::linearRand(mLifetimeMin, mLifetimeMax);
-			mParticles.push_front(Particle::create(mMaterial, particleVel, particleSpinVel, particleLifetime, mAutofade));
+			float particleScale = glm::linearRand(mScaleMin, mScaleMax);
+			ParticlePtr particle = Particle::create(mMaterial, particleVel, particleSpinVel, particleLifetime, mAutofade);
+			particle->setScale(glm::vec3(particleScale, particleScale, 1.f));
+			particle->setPosition(getPosition());
+			//glm::vec4 particleColor(glm::linearRand(mColorMin.r, mColorMax.r), glm::linearRand(mColorMin.g, mColorMax.g), glm::linearRand(mColorMin.b, mColorMax.b), glm::linearRand(mColorMin.a, mColorMax.a));
+			// TODO treat color
+			mParticles.push_front(particle);
 			++mNumParticles;
+			++particlesEmitted;
 		}
+		mNumParticlesToEmit -= particlesEmitted;
 	}
 
 	for (auto it = mParticles.begin(); it != mParticles.end(); ) {

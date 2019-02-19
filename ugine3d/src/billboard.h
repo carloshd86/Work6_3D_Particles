@@ -26,6 +26,7 @@ protected:
 	Material        mMaterial;
 	glm::vec2       mSize;
 	float           mSpin;
+	float           mAngleSpin;
 
 private:
 	BufferPtr       mBuffer;

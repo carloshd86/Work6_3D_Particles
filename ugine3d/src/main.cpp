@@ -50,33 +50,37 @@ int main() {
 	// create camera
 	CameraPtr camera = Camera::create(glm::ivec2(SCREEN_WIDTH, SCREEN_HEIGHT));
 	camera->setClearColor(glm::vec3(0, 0, 0));
+	/* Totem */
 	camera->setPosition  (glm::vec3(0, 5.f, 25.f));
 	camera->setEuler     (glm::vec3(0, 0, 0));
+	/* Rabbit */
+	//camera->setPosition  (glm::vec3(0, 0.20f, 0.08f));
+	//camera->setEuler     (glm::vec3(330, 0, 0));
 	world->addEntity(camera);
 
 	// create models
 	ModelPtr model = Model::create(mesh);
+	/* Totem */
 	model->setScale(glm::vec3(0.01f, 0.01f, 0.01f));
-	//world->addEntity(model);
+	/* Rabbit */
+	//model->setEuler(glm::vec3(90.0f, 0.0f, 0.0f));
+	//model->setPosition(glm::vec3(0.03f, -0.1f, -0.3f));
+	world->addEntity(model);
 
 	// load textures
 	std::shared_ptr<Texture> smoke = Texture::load("data/smoke.png");
 	std::shared_ptr<Texture> flame = Texture::load("data/flame.png");
 
 	// create emitters
-	Material flameMaterial(flame);
 	Material smokeMaterial(smoke);
-
-	EmitterPtr flameEmitter = Emitter::create(flameMaterial, false);
-	flameEmitter->emit(true);
-	flameEmitter->setRateRange(10.f, 25.f);
-	flameEmitter->setLifetimeRange(0.5f, 0.5f);
-	flameEmitter->setVelocityRange(glm::vec3(-1.f, 5.f, -1.f), glm::vec3(1.f, 10.f, 1.f));
-	flameEmitter->setSpinVelocityRange(0.f, 0.f);
-	flameEmitter->setScaleRange(0.025f, 0.1f);
-	flameEmitter->setColorRange(glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(1.f, 1.f, 1.f, 1.f));
-	flameEmitter->setPosition(model->getPosition() + glm::vec3(0.f, 6.f, 0.f));
-	world->addEntity(flameEmitter);
+	smokeMaterial.setDepthWrite(false);
+	//smokeMaterial.setCulling(false);
+	Material flameMaterial(flame);
+	flameMaterial.setDepthWrite(false);
+	//flameMaterial.setCulling(false);
+	flameMaterial.setBlendMode(Material::BlendMode::ADD);
+	
+	glm::vec3 emittersPosition = model->getPosition() + glm::vec3(0.f, 6.5f, 0.f);
 
 	EmitterPtr smokeEmitter = Emitter::create(smokeMaterial, true);
 	smokeEmitter->emit(true);
@@ -86,12 +90,24 @@ int main() {
 	smokeEmitter->setSpinVelocityRange(30.f, 60.f);
 	smokeEmitter->setScaleRange(0.05f, 0.1f);
 	smokeEmitter->setColorRange(glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(1.f, 1.f, 1.f, 1.f));
-	smokeEmitter->setPosition(model->getPosition() + glm::vec3(0.f, 6.f, 0.f));;
+	smokeEmitter->setPosition(emittersPosition);;
+	
+
+	EmitterPtr flameEmitter = Emitter::create(flameMaterial, true);
+	flameEmitter->emit(true);
+	flameEmitter->setRateRange(10.f, 25.f);
+	flameEmitter->setLifetimeRange(0.5f, 0.5f);
+	flameEmitter->setVelocityRange(glm::vec3(-1.f, 5.f, -1.f), glm::vec3(1.f, 10.f, 1.f));
+	flameEmitter->setSpinVelocityRange(0.f, 0.f);
+	flameEmitter->setScaleRange(0.025f, 0.1f);
+	flameEmitter->setColorRange(glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(1.f, 1.f, 1.f, 1.f));
+	flameEmitter->setPosition(emittersPosition);
+	world->addEntity(flameEmitter);
 	world->addEntity(smokeEmitter);
 
 	 // create lights
-	LightPtr totemLight = Light::create(Light::Type::POINT, glm::vec3(1.f, 1.f, 1.f));
-	totemLight->setPosition(flameEmitter->getPosition());
+	LightPtr totemLight = Light::create(Light::Type::POINT, glm::vec3(1.f, 1.f, 1.f), 0.2f);
+	totemLight->setPosition(emittersPosition);
 	world->addEntity(totemLight);
 	world->setAmbient(glm::vec3(0.2f, 0.2f, 0.2f));
 
@@ -129,16 +145,18 @@ int main() {
 		camera->setProjection(glm::perspective(glm::radians(45.0f), aspectRatio, 0.01f, 100.0f));
 		camera->setViewport(glm::ivec4(0, 0, screenWidth, screenHeight));
 		
-		/*glm::vec3 cameraEuler = camera->getEuler();
-		cameraEuler.x -= speedMY * rotationSpeed * deltaTime;
-		cameraEuler.y -= speedMX * rotationSpeed * deltaTime;
+		glm::vec3 cameraEuler = camera->getEuler();
+		/*cameraEuler.x -= speedMY * rotationSpeed * deltaTime;
+		cameraEuler.y -= speedMX * rotationSpeed * deltaTime;*/
+		if (glfwGetKey(win, GLFW_KEY_LEFT))  cameraEuler.y += rotationSpeed * deltaTime;
+		if (glfwGetKey(win, GLFW_KEY_RIGHT)) cameraEuler.y -= rotationSpeed * deltaTime;
 		cameraEuler.x = std::max(cameraEuler.x, -60.f);
 		cameraEuler.x = std::min(cameraEuler.x, 60.f);
 		if (cameraEuler.y > 360) cameraEuler.y -= 360;
 		if (cameraEuler.y < 0) cameraEuler.y += 360;
-		camera->setEuler(cameraEuler);*/
+		camera->setEuler(cameraEuler);
 
-		/*glm::quat cameraQuaternion = camera->getQuaternion();
+	   /* glm::quat cameraQuaternion = camera->getQuaternion();
 		cameraQuaternion.x -= glm::radians(speedMY * rotationSpeed * deltaTime);
 		cameraQuaternion.y -= glm::radians(speedMX * rotationSpeed * deltaTime);
 		cameraQuaternion.x = std::max(cameraQuaternion.x, glm::radians(-60.f));
@@ -155,6 +173,9 @@ int main() {
 		camera->move(movement);
 		
 		angle += rotationSpeed * deltaTime * DEGREES_TO_RAD;
+
+		// camera->move(glm::vec3(sin(angle) * 25.f, 0.f, cos(angle) * 25.f));
+		// glm::mat4 lookAt = glm::lookAt(camera->getPosition(), modelPosition, glm::vec3(0.f, 0.f, 1.f));
 
 		// update world
 		world->update(deltaTime);
